@@ -1,6 +1,7 @@
 package templates
 
 templ header(title string) {
+	<!DOCTYPE html>
 	<head>
 		<title>{ title }</title>
 		<meta charset="UTF-8"/>
@@ -12,5 +13,7 @@ templ header(title string) {
 
 templ Layout(contents templ.Component, title string) {
 	@header(title)
-	@contents
+	<body>
+		@contents
+	</body>
 }
