@@ -33,9 +33,19 @@ sources = ['internal/database/**/*.sql']
 outputs = ['internal/database/*.go']
 run = "sqlc generate"
 
+[tasks.db-up]
+description = "Run migration"
+sources = ['internal/database/migrations/*.sql']
+outputs = ['db/schema.sql', 'db/database.sqlite3']
+run = "mkdir -p db && dbmate up"
+
+[tasks.db-down]
+description = "Run migration"
+run = "dbmate down"
+
 [tasks.build]
 depends = ["templ", "tailwindcss", "sql"]
 description = "Build the source code"
 sources = ['internal/**/*.go', 'cmd/*.go']
-outputs = ['bin/server', 'db/schema.sql', 'db/database.sqlite3']
-run = "mkdir -p db && dbmate up && go build -o bin/server cmd/main.go"
+outputs = ['bin/server']
+run = "go build -o bin/server cmd/main.go"
