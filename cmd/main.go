@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"database/sql"
-	"gottd/internal/database"
-	"gottd/internal/handlers"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"papertrader/internal/database"
+	"papertrader/internal/handlers"
 
 	_ "github.com/mattn/go-sqlite3"
 

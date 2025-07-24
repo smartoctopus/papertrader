@@ -1,4 +1,4 @@
-module gottd
+module papertrader
 
 go 1.24.5
 

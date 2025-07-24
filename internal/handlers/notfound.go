@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"gottd/internal/templates"
 	"net/http"
+
+	"papertrader/internal/templates"
 )
 
 type NotFoundHandler struct{}
