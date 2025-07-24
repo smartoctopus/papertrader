@@ -1,14 +1,26 @@
-# GOTTD
+# Paper Trader
 
-A [Go](https://go.dev/) template using:
-- [chi](https://github.com/go-chi/chi)
-- [templ](https://github.com/a-h/templ)
-- [tailwindcss](https://github.com/tailwindlabs/tailwindcss)
-- [datastar](https://github.com/starfederation/datastar)
-- [sqlc](https://github.com/sqlc-dev/sqlc)
-- [dbmate](https://github.com/amacneil/dbmate)
+A paper trading webapp, focused on prop firm futures trading.
 
-## Inspiration
+## TODOs
 
-- TomDoesTech [GOTTH](https://github.com/TomDoesTech/GOTTH) stack
-- Dreams of Code [sqlc](https://github.com/dreamsofcode-io/sqlc) example repository
+- [ ] Top navbar: trade, shop, other + balance & prop accounts
+- [ ] Trade page:
+	- [ ] Chart (1-min, 5-min)
+	- [ ] Indicators
+		- [ ] EMA
+		- [ ] ATR
+	- [ ] Execution sidebar
+		- [ ] Sierra Chart queue simulation?
+- [ ] Shop page:
+	- [ ] Prop accounts
+		- [ ] MFFU
+		- [ ] TopStep
+		- [ ] Other props?
+	- [ ] Rewards
+- [ ] Other page:
+	- [ ] Ross Cameron-like spider-chart statistics
+	- [ ] Load data button
+- [ ] Balance
+- [ ] Prop accounts popup
+	- [ ] Checkbox with selected accounts
