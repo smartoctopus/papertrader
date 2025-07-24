@@ -1,0 +1,6 @@
+tmp
+bin
+db
+internal/database/*.go
+*_templ.go
+static/css/style.min.css

@@ -1,0 +1,47 @@
+[tools]
+go = "latest"
+"go:github.com/a-h/templ/cmd/templ" = "latest"
+"go:github.com/air-verse/air" = "latest"
+"go:github.com/sqlc-dev/sqlc/cmd/sqlc" = "latest"
+"ubi:amacneil/dbmate" = "latest"
+"ubi:tailwindlabs/tailwindcss" = "latest"
+watchexec = "latest"
+
+[env]
+DATABASE_URL = "sqlite:db/database.sqlite3"
+DBMATE_MIGRATIONS_DIR = "internal/database/migrations"
+
+[tasks.update-datastar]
+description = "Download Datastar"
+run = "curl https://cdn.jsdelivr.net/gh/starfederation/datastar@main/bundles/datastar.js -o static/js/datastar.js"
+
+[tasks.templ]
+description = "Generate the templates"
+sources = ['internal/templates/*.templ']
+outputs = ['internal/templates/*.go']
+run = "templ generate"
+
+[tasks.tailwindcss]
+description = "Generate the CSS files"
+sources = ['static/css/input.css', 'internal/templates/*.templ']
+outputs = ['static/css/style.min.css']
+run = "tailwindcss -i static/css/input.css -o static/css/style.min.css --minify"
+
+[tasks.sql]
+description = "Run SQLc"
+sources = ['internal/database/**/*.sql']
+outputs = ['internal/database/*.go']
+run = "sqlc generate"
+
+[tasks.db]
+description = "Run database migrations"
+sources = ['internal/database/migrations/*.sql']
+outputs = ['db/schema.sql']
+run = "dbmate up"
+
+[tasks.build]
+depends = ["templ", "tailwindcss", "sql"]
+description = "Build the source code"
+sources = ['internal/**/*.go', 'cmd/*.go']
+outputs = ['bin/server']
+run = "mise db && go build -o bin/server cmd/main.go"
