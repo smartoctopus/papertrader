@@ -3,9 +3,9 @@ package templates
 templ navbar() {
 	<nav class="bg-white border-b border-gray-200 px-4 py-2.5 flex justify-between">
 		<div class="flex gap-4 items-center">
-			<a href="/" class="text-gray-700 hover:text-blue-600">Trading</a>
-			<a href="/shop" class="text-gray-700 hover:text-blue-600">Shop</a>
-			<a href="/statistics" class="text-gray-700 hover:text-blue-600">Statistics</a>
+			<button class="text-gray-700 hover:text-blue-600" data-on-click="@get('/trading')">Trading</button>
+			<button class="text-gray-700 hover:text-blue-600" data-on-click="@get('/shop')">Shop</button>
+			<button class="text-gray-700 hover:text-blue-600" data-on-click="@get('/statistics')">Statistics</button>
 		</div>
 		<div class="flex gap-4 items-center">
 			<div class="text-gray-700">$100</div>
@@ -18,7 +18,7 @@ templ navbar() {
 	</nav>
 }
 
-templ Page(contents templ.Component) {
+templ Page() {
 	@navbar()
-	@contents
+	<div id="content"></div>
 }

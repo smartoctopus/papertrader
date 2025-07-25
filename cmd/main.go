@@ -32,6 +32,8 @@ func router(queries *database.Queries) http.Handler {
 
 	r.NotFound(handlers.NewNotFoundHandler().ServeHTTP)
 
+	r.HandleFunc("/", handlers.NewPageHandler().ServeHTTP)
+
 	return r
 }
 
