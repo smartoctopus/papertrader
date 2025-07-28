@@ -17,7 +17,7 @@ templ header(title string) {
 
 templ Layout(contents templ.Component, title string) {
 	@header(title)
-	<body>
+	<body class="flex flex-col h-screen">
 		@contents
 	</body>
 }

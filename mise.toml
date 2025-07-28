@@ -11,9 +11,12 @@ watchexec = "latest"
 DATABASE_URL = "sqlite:db/database.sqlite3"
 DBMATE_MIGRATIONS_DIR = "internal/database/migrations"
 
-[tasks.update-datastar]
-description = "Download Datastar"
-run = "curl https://cdn.jsdelivr.net/gh/starfederation/datastar@main/bundles/datastar.js -o static/js/datastar.js"
+[tasks.update-js]
+description = "Update Datastar & Lightweight Charts"
+run = [
+    'curl -o static/js/datastar.js https://cdn.jsdelivr.net/gh/starfederation/datastar@main/bundles/datastar.js',
+    'curl -L -o static/js/lightweight-charts.js https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.mjs',
+]
 
 [tasks.templ]
 description = "Generate the templates"

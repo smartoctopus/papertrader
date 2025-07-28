@@ -1,0 +1,110 @@
+package templates
+
+templ instrument() {
+	<div
+		class="relative inline-block text-left w-full"
+		data-signals-_instrument.open
+	>
+		<!-- Dropdown button -->
+		<button
+			type="button"
+			class="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-sm text-gray-700 hover:bg-gray-50"
+			data-on-click__stop="$_instrument.open = !$_instrument.open"
+		>
+			<span data-text="$instrument"></span>
+			<svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+			</svg>
+		</button>
+		<!-- Dropdown menu -->
+		<div
+			class="w-full origin-top-right absolute mt-2 rounded-md shadow-lg bg-white ring-1 ring-gray-200 ring-opacity-5 focus:outline-none"
+			data-show="$_instrument.open"
+			data-on-click__outside="$_instrument.open = false"
+		>
+			<div class="py-1">
+				<div class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-on-click="$instrument = 'NQ'; $_instrument.open = false">NQ</div>
+				<div class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-on-click="$instrument = 'ES'; $_instrument.open = false">ES</div>
+				<div class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-on-click="$instrument = 'GC'; $_instrument.open = false">GC</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ contracts() {
+	<div class="my-6 w-full">
+		<div class="flex justify-between items-center">
+			<input
+				data-bind-quantity
+				type="number"
+				min="1"
+				max="20"
+				class="w-full border border-gray-300 rounded px-3 py-2 mb-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+				placeholder="0"
+			/>
+		</div>
+		<div class="flex justify-between space-x-2">
+			<button type="button" class="flex-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" data-on-click="$quantity = 1">1</button>
+			<button type="button" class="flex-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" data-on-click="$quantity = 2">2</button>
+			<button type="button" class="flex-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" data-on-click="$quantity = 3">3</button>
+			<button type="button" class="flex-1 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" data-on-click="$quantity = 4">4</button>
+		</div>
+	</div>
+}
+
+templ buttons() {
+	<div class="flex justify-between space-x-2">
+		<button
+			type="button"
+			class="flex-1 py-2 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300 transition duration-100"
+		>
+			Buy
+		</button>
+		<button
+			type="button"
+			class="flex-1 py-2 font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300 transition duration-100"
+		>
+			Sell
+		</button>
+	</div>
+}
+
+templ pnl() {
+	// NOTE: This is a workaround because I can't get a table with rounded borders get displayed properly
+	<div
+		class="w-full grid grid-cols-4 my-6 border border-gray-300 rounded-lg"
+		data-signals="{bought: 0, sold: 0, holding: 0, pnl: '0'}"
+	>
+		// First row
+		<div class="p-2 min-w-max text-sm text-gray-700 text-center border-r border-b border-gray-300">Bought</div>
+		<div class="p-2 min-w-max text-sm text-gray-700 text-center border-r border-b border-gray-300">Sold</div>
+		<div class="p-2 min-w-max text-sm text-gray-700 text-center border-r border-b border-gray-300">Holding</div>
+		<div class="p-2 min-w-max text-sm text-gray-700 text-center border-b border-gray-300">PNL</div>
+		// Second row
+		<div class="px-2 py-1 min-w-max text-gray-700 text-center border-r border-gray-300" data-text="$bought"></div>
+		<div class="px-2 py-1 min-w-max text-gray-700 text-center border-r border-gray-300" data-text="$sold"></div>
+		<div class="px-2 py-1 min-w-max text-gray-700 text-center border-r border-gray-300" data-text="$holding"></div>
+		<div class="px-2 py-1 min-w-max text-gray-700 text-center" data-text="$pnl"></div>
+	</div>
+}
+
+templ Trading() {
+	<script type="module" src="/static/js/chart.js"></script>
+	<div
+		id="content"
+		class="flex flex-1"
+		data-signals="{ instrument: 'NQ' }"
+	>
+		<lightweight-chart
+			id="chart"
+			class="flex-1"
+			data-attr-instrument="$instrument"
+		></lightweight-chart>
+		<div class="px-4 py-4 border-l border-gray-200">
+			@instrument()
+			@contracts()
+			@buttons()
+			@pnl()
+		</div>
+	</div>
+}

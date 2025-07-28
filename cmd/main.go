@@ -34,6 +34,8 @@ func router(queries *database.Queries) http.Handler {
 
 	r.HandleFunc("/", handlers.NewPageHandler().ServeHTTP)
 
+	r.HandleFunc("/trading", handlers.NewTradingHandler(queries).ServeHTTP)
+
 	return r
 }
 
