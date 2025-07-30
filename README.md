@@ -4,7 +4,7 @@ A paper trading webapp, focused on prop firm futures trading.
 
 ## TODOs
 
-- [ ] Top navbar: trade, shop, other + balance & prop accounts
+- [x] Top navbar: trade, shop, other + balance & prop accounts
 - [ ] Trade page:
 	- [ ] Chart (1-min, 5-min)
 	- [ ] Indicators

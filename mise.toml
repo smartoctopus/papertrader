@@ -49,6 +49,6 @@ run = "dbmate down"
 [tasks.build]
 depends = ["templ", "tailwindcss", "sql"]
 description = "Build the source code"
-sources = ['internal/**/*.go', 'cmd/*.go']
+sources = ['internal/**/*.go', 'cmd/*.go', 'go.mod']
 outputs = ['bin/server']
 run = "go build -o bin/server cmd/main.go"

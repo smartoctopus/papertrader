@@ -3,7 +3,7 @@ bin = "./bin/server"
 cmd = "mise build"
 exclude_dir = ["static", "db"]
 exclude_regex = ["_test.go", ".*_templ.go"]
-include_ext = ["go", "tmpl", "templ", "sql"]
+include_ext = ["go", "tmpl", "templ", "sql", "mod"]
 
 [color]
 app = ""
