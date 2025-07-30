@@ -36,6 +36,8 @@ func router(queries *database.Queries) http.Handler {
 
 	r.HandleFunc("/trading", handlers.NewTradingHandler(queries).ServeHTTP)
 
+	r.HandleFunc("/data/ohlcv", handlers.NewOHLCVHandler(queries).ServeHTTP)
+
 	return r
 }
 

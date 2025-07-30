@@ -22,6 +22,21 @@ class LightweightChartWC extends HTMLElement {
     this.attachShadow({ mode: "open" });
   }
 
+  // Attribute functions
+  get instrument() {
+    return this.getAttribute("instrument");
+  }
+
+  static get observedAttributes() {
+    return ["instrument"];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "instrument") {
+      this.loadData();
+    }
+  }
+
   connectedCallback() {
     // Create container div
     const container = document.createElement("div");
@@ -50,21 +65,6 @@ class LightweightChartWC extends HTMLElement {
       wickUpColor: "#26a69a",
       wickDownColor: "#ef5350",
     });
-    const data = [
-      { open: 10, high: 10.63, low: 9.49, close: 9.55, time: 1642427876 },
-      { open: 9.55, high: 10.3, low: 9.42, close: 9.94, time: 1642514276 },
-      { open: 9.94, high: 10.17, low: 9.92, close: 9.78, time: 1642600676 },
-      { open: 9.78, high: 10.59, low: 9.18, close: 9.51, time: 1642687076 },
-      { open: 9.51, high: 10.46, low: 9.1, close: 10.17, time: 1642773476 },
-      { open: 10.17, high: 10.96, low: 10.16, close: 10.47, time: 1642859876 },
-      { open: 10.47, high: 11.39, low: 10.4, close: 10.81, time: 1642946276 },
-      { open: 10.81, high: 11.6, low: 10.3, close: 10.75, time: 1643032676 },
-      { open: 10.75, high: 11.6, low: 10.49, close: 10.93, time: 1643119076 },
-      { open: 10.93, high: 11.53, low: 10.76, close: 10.96, time: 1643205476 },
-    ];
-    this.series.setData(data);
-
-    this.chart.timeScale().fitContent();
 
     // Handle resizing
     window.addEventListener("resize", () => {
@@ -75,8 +75,23 @@ class LightweightChartWC extends HTMLElement {
     });
   }
 
-  disconnectedCallback() {
-    // Cleanup listeners or destroy chart if needed
+  loadData() {
+    fetch(`/data/ohlcv?instrument=${this.instrument}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok " + response.statusText);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+
+        this.series.setData(data);
+        this.chart.timeScale().fitContent();
+      })
+      .catch((error) => {
+        console.error("There was a problem with the fetch operation:", error);
+      });
   }
 }
 
