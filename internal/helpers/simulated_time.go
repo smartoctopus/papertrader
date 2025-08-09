@@ -2,6 +2,8 @@ package helpers
 
 import "time"
 
+const PlaybackSpeed = time.Duration(5)
+
 var startSimulatedTime time.Time
 var baseSimulatedTime time.Time
 
@@ -16,6 +18,6 @@ func StartSimulatedTime() {
 }
 
 func GetSimulatedTime(t time.Time) time.Time {
-	elapsed := t.Sub(startSimulatedTime)
+	elapsed := t.Sub(startSimulatedTime) * PlaybackSpeed
 	return baseSimulatedTime.Add(elapsed)
 }

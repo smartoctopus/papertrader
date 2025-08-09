@@ -62,7 +62,7 @@ func (h *TickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if i+1 < len(ticks) {
-			dt := time.Duration(ticks[i+1].Time-t) * time.Millisecond
+			dt := (time.Duration(ticks[i+1].Time-t) * time.Millisecond) / helpers.PlaybackSpeed
 			time.Sleep(dt)
 		}
 	}
