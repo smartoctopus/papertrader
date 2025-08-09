@@ -84,8 +84,6 @@ class LightweightChartWC extends HTMLElement {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
-
         this.series.setData(data);
         this.chart.timeScale().fitContent();
       })

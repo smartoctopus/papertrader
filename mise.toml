@@ -51,4 +51,4 @@ depends = ["templ", "tailwindcss", "sql"]
 description = "Build the source code"
 sources = ['internal/**/*.go', 'cmd/*.go', 'go.mod']
 outputs = ['bin/server']
-run = "go build -o bin/server cmd/main.go"
+run = "go build -o bin/server cmd/*.go"

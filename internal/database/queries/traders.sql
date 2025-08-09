@@ -8,9 +8,9 @@ ORDER BY id;
 
 -- name: CreateTrader :one
 INSERT INTO traders (
-  balance
+    balance
 ) VALUES (
-  ?
+    ?
 )
 RETURNING *;
 

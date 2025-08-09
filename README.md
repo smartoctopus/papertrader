@@ -9,9 +9,8 @@ A paper trading webapp, focused on prop firm futures trading.
 	- [ ] Chart (1-min, 5-min)
 	- [ ] Indicators
 		- [ ] EMA
-		- [ ] ATR
+		- [ ] ATR Extension
 	- [ ] Execution sidebar
-		- [ ] Sierra Chart queue simulation?
 - [ ] Shop page:
 	- [ ] Prop accounts
 		- [ ] MFFU
