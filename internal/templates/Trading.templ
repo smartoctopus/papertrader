@@ -93,12 +93,13 @@ templ Trading() {
 	<div
 		id="content"
 		class="flex flex-1"
-		data-signals="{ instrument: 'NQ' }"
+		data-signals="{ instrument: 'NQ', tick: '' }"
 	>
 		<lightweight-chart
 			id="chart"
 			class="flex-1"
 			data-attr-instrument="$instrument"
+			data-on-newtick="$tick = evt.detail.value"
 		></lightweight-chart>
 		<div class="px-4 py-4 border-l border-gray-200">
 			@instrument()

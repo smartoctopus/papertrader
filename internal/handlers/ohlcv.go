@@ -1,27 +1,15 @@
 package handlers
 
 import (
-	"encoding/csv"
+	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"papertrader/internal/database"
-
-	"github.com/govalues/decimal"
+	"papertrader/internal/helpers"
 )
-
-type OHLCV struct {
-	Time   int64           `json:"time"`
-	Open   decimal.Decimal `json:"open"`
-	High   decimal.Decimal `json:"high"`
-	Low    decimal.Decimal `json:"low"`
-	Close  decimal.Decimal `json:"close"`
-	Volume decimal.Decimal `json:"volume"`
-}
 
 type OHLCVHandler struct {
 	queries *database.Queries
@@ -36,8 +24,7 @@ func (h *OHLCVHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	// TODO: Make this function a DB request
-	ohlcv, err := generateOHLCV(instrument)
+	ohlcv, err := h.getOHLCV(instrument)
 	if err != nil {
 		http.Error(w, "Error fetching OHLCV data", http.StatusInternalServerError)
 	}
@@ -45,8 +32,7 @@ func (h *OHLCVHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ohlcv)
 }
 
-// TODO: Load this data to a DB
-func generateOHLCV(instrument string) ([]OHLCV, error) {
+func (h *OHLCVHandler) getOHLCV(instrument string) ([]database.GetOHLCVRow, error) {
 	allowed_instruments := map[string]struct{}{
 		"NQ": {},
 		"ES": {},
@@ -57,52 +43,71 @@ func generateOHLCV(instrument string) ([]OHLCV, error) {
 		return nil, errors.New("Instrument not allowed")
 	}
 
-	file, err := os.Open(fmt.Sprintf("tmp/%s.csv", instrument))
+	start, end, ticks_start, ticks_end := calculateOHLCVTimestamps()
+
+	ohlcv, err := h.queries.GetOHLCV(context.Background(), database.GetOHLCVParams{
+		Instrument: instrument,
+		Start:      start,
+		End:        end,
+	})
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
 
-	reader := csv.NewReader(file)
-	records, err := reader.ReadAll()
+	ticks, err := h.queries.GetTicks(context.Background(), database.GetTicksParams{
+		Instrument: instrument,
+		Start:      ticks_start,
+		End:        ticks_end,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	result := []OHLCV{}
+	if len(ticks) != 0 {
+		tick := ticks[0]
 
-	for _, record := range records {
-		parsedDate, err := time.Parse("02/01/2006", record[0])
-		if err != nil {
-			return nil, err
+		lastCandle := database.GetOHLCVRow{
+			Time:   time.UnixMilli(tick.Time).Truncate(time.Minute).Add(time.Minute).Unix(),
+			Open:   tick.Price,
+			High:   tick.Price,
+			Low:    tick.Price,
+			Close:  tick.Price,
+			Volume: tick.Volume,
 		}
 
-		parsedTime, err := time.Parse("15:04:05", record[1])
-		if err != nil {
-			return nil, err
+		for i := 1; i < len(ticks); i++ {
+			tick := ticks[i]
+
+			lastCandle.Close = tick.Price
+			lastCandle.Volume, _ = lastCandle.Volume.Add(tick.Volume)
+
+			if tick.Price.Cmp(lastCandle.Low) < 0 {
+				lastCandle.Low = tick.Price
+			}
+
+			if tick.Price.Cmp(lastCandle.High) > 0 {
+				lastCandle.High = tick.Price
+			}
 		}
 
-		combined := time.Date(
-			parsedDate.Year(), parsedDate.Month(), parsedDate.Day(),
-			parsedTime.Hour(), parsedTime.Minute(), parsedTime.Second(), parsedTime.Nanosecond(),
-			parsedDate.Location(),
-		)
-
-		open, _ := decimal.Parse(record[2])
-		high, _ := decimal.Parse(record[3])
-		low, _ := decimal.Parse(record[4])
-		close, _ := decimal.Parse(record[5])
-		volume, _ := decimal.Parse(record[6])
-
-		result = append(result, OHLCV{
-			Time:   combined.Unix(),
-			Open:   open,
-			High:   high,
-			Low:    low,
-			Close:  close,
-			Volume: volume,
-		})
+		ohlcv = append(ohlcv, lastCandle)
 	}
 
-	return result, nil
+	return ohlcv, nil
+}
+
+func calculateOHLCVTimestamps() (int64, int64, int64, int64) {
+	now := time.Now().UTC()
+	startOfToday := time.Date(
+		now.Year(), now.Month(), now.Day(),
+		0, 0, 0, 0, now.Location(),
+	)
+
+	numberOfDays := time.Duration(5)
+	start := startOfToday.Add(-time.Hour * 24 * (numberOfDays + 1)) // Need to add one day, because the simulation runs on yesterday data
+
+	simulated_time := helpers.GetSimulatedTime(now)
+	end := simulated_time.Truncate(time.Minute)
+
+	return start.Unix(), end.Unix(), end.UnixMilli(), simulated_time.UnixMilli()
 }

@@ -9,3 +9,5 @@ require github.com/a-h/templ v0.3.920
 require github.com/mattn/go-sqlite3 v1.14.28
 
 require github.com/govalues/decimal v0.1.36
+
+require github.com/gorilla/websocket v1.5.3

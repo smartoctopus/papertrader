@@ -34,6 +34,7 @@ class LightweightChartWC extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "instrument") {
       this.loadData();
+      this.setupSocket();
     }
   }
 
@@ -55,6 +56,9 @@ class LightweightChartWC extends HTMLElement {
         textColor: "black",
         background: { type: "solid", color: "white" },
       },
+      timeScale: {
+        timeVisible: true,
+      },
     });
 
     // Add a simple line series with example data
@@ -73,6 +77,66 @@ class LightweightChartWC extends HTMLElement {
         height: container.clientHeight,
       });
     });
+  }
+
+  addTick(tick) {
+    const createCandle = (time, price) => ({
+      time,
+      open: price,
+      high: price,
+      low: price,
+      close: price,
+    });
+
+    const updateCandle = (candle, val) => ({
+      time: candle.time,
+      close: val,
+      open: candle.open,
+      low: Math.min(candle.low, val),
+      high: Math.max(candle.high, val),
+    });
+
+    let lastCandle = this.series.data().at(-1);
+
+    if (tick.time != lastCandle.time) {
+      this.series.update(createCandle(tick.time, tick.price));
+    } else {
+      this.series.update(updateCandle(lastCandle, tick.price));
+    }
+  }
+
+  setupSocket() {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.close();
+    }
+
+    this.socket = new WebSocket(`/data/tick?instrument=${this.instrument}`);
+
+    this.socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.error) {
+          console.error("WebSocket error:", data.error);
+          console.error("Details:", data.details);
+        } else {
+          this.addTick(data);
+          this.dispatchEvent(
+            new CustomEvent("newtick", {
+              detail: {
+                value: data.price,
+              },
+            }),
+          );
+        }
+      } catch (e) {
+        console.error("Failed to parse WebSocket message:", e);
+      }
+    };
+
+    this.socket.onerror = (error) => {
+      console.log("WebSocket error:", error);
+    };
   }
 
   loadData() {

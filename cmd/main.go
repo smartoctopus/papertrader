@@ -12,6 +12,7 @@ import (
 
 	"papertrader/internal/database"
 	"papertrader/internal/handlers"
+	"papertrader/internal/helpers"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -33,21 +34,42 @@ func router(queries *database.Queries) http.Handler {
 	r.HandleFunc("/trading", handlers.NewTradingHandler(queries).ServeHTTP)
 
 	r.HandleFunc("/data/ohlcv", handlers.NewOHLCVHandler(queries).ServeHTTP)
+	r.HandleFunc("/data/tick", handlers.NewTickHandler(queries).ServeHTTP)
 
 	return r
 }
 
 func main() {
-	// Open the database
+	db := setupDB()
+	defer db.Close()
+	queries := database.New(db)
+
+	helpers.StartSimulatedTime()
+
+	loadData(db, queries)
+
+	runServer(queries)
+}
+
+func setupDB() *sql.DB {
 	db, err := sql.Open("sqlite3", "file:db/database.sqlite3?cache=shared&mode=rw")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
-	queries := database.New(db)
+	// Set journal_mode to WAL
+	_, err = db.Exec("PRAGMA journal_mode = WAL;")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	runServer(queries)
+	// Set synchronous to NORMAL
+	_, err = db.Exec("PRAGMA synchronous = NORMAL;")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return db
 }
 
 func runServer(queries *database.Queries) {
