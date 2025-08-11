@@ -27,12 +27,16 @@ class LightweightChartWC extends HTMLElement {
     return this.getAttribute("instrument");
   }
 
+  get timeframe() {
+    return this.getAttribute("timeframe");
+  }
+
   static get observedAttributes() {
-    return ["instrument"];
+    return ["instrument", "timeframe"];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "instrument") {
+    if (name === "instrument" || name === "timeframe") {
       this.loadData();
       this.setupSocket();
     }
@@ -106,11 +110,13 @@ class LightweightChartWC extends HTMLElement {
   }
 
   setupSocket() {
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+    if (this.socket) {
       this.socket.close();
     }
 
-    this.socket = new WebSocket(`/data/tick?instrument=${this.instrument}`);
+    this.socket = new WebSocket(
+      `/data/tick?instrument=${this.instrument}&timeframe=${this.timeframe}`,
+    );
 
     this.socket.onmessage = (event) => {
       try {
@@ -140,7 +146,9 @@ class LightweightChartWC extends HTMLElement {
   }
 
   loadData() {
-    fetch(`/data/ohlcv?instrument=${this.instrument}`)
+    fetch(
+      `/data/ohlcv?instrument=${this.instrument}&timeframe=${this.timeframe}`,
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok " + response.statusText);

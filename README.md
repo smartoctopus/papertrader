@@ -6,7 +6,7 @@ A paper trading webapp, focused on prop firm futures trading.
 
 - [x] Top navbar: trade, shop, other + balance & prop accounts
 - [ ] Trade page:
-	- [ ] Chart (1-min, 5-min)
+	- [x] Chart (1-min, 5-min)
 	- [ ] Indicators
 		- [ ] EMA
 		- [ ] ATR Extension

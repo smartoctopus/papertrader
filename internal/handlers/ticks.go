@@ -22,9 +22,15 @@ func NewTickHandler(queries *database.Queries) *TickHandler {
 	return &TickHandler{queries: queries}
 }
 
-// TODO: Should handle various timeframes
 func (h *TickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	instrument := r.URL.Query().Get("instrument")
+	timeframe := r.URL.Query().Get("timeframe")
+
+	duration, err := helpers.TimeframeToDuration(timeframe)
+	if err != nil {
+		http.Error(w, "Unsupported timeframe", http.StatusBadRequest)
+		return
+	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -54,7 +60,7 @@ func (h *TickHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	for i, tick := range ticks {
 		t := tick.Time
-		tick.Time = time.UnixMilli(tick.Time).Truncate(time.Minute).Add(time.Minute).Unix()
+		tick.Time = helpers.CandleTime(time.UnixMilli(tick.Time), duration).Unix()
 
 		if err := conn.WriteJSON(tick); err != nil {
 			log.Println("Write error:", err)

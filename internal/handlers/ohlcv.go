@@ -21,10 +21,11 @@ func NewOHLCVHandler(queries *database.Queries) *OHLCVHandler {
 
 func (h *OHLCVHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	instrument := r.URL.Query().Get("instrument")
+	timeframe := r.URL.Query().Get("timeframe")
 
 	w.Header().Set("Content-Type", "application/json")
 
-	ohlcv, err := h.getOHLCV(instrument)
+	ohlcv, err := h.getOHLCV(instrument, timeframe)
 	if err != nil {
 		http.Error(w, "Error fetching OHLCV data", http.StatusInternalServerError)
 	}
@@ -32,7 +33,7 @@ func (h *OHLCVHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ohlcv)
 }
 
-func (h *OHLCVHandler) getOHLCV(instrument string) ([]database.GetOHLCVRow, error) {
+func (h *OHLCVHandler) getOHLCV(instrument string, timeframe string) ([]database.GetOHLCVRow, error) {
 	allowed_instruments := map[string]struct{}{
 		"NQ": {},
 		"ES": {},
@@ -41,6 +42,11 @@ func (h *OHLCVHandler) getOHLCV(instrument string) ([]database.GetOHLCVRow, erro
 
 	if _, exists := allowed_instruments[instrument]; !exists {
 		return nil, errors.New("Instrument not allowed")
+	}
+
+	duration, err := helpers.TimeframeToDuration(timeframe)
+	if err != nil {
+		return nil, err
 	}
 
 	start, end, ticks_start, ticks_end := calculateOHLCVTimestamps()
@@ -93,7 +99,7 @@ func (h *OHLCVHandler) getOHLCV(instrument string) ([]database.GetOHLCVRow, erro
 		ohlcv = append(ohlcv, lastCandle)
 	}
 
-	return ohlcv, nil
+	return recalculateOHLCVOnTimeframe(ohlcv, duration), nil
 }
 
 func calculateOHLCVTimestamps() (int64, int64, int64, int64) {
@@ -110,4 +116,51 @@ func calculateOHLCVTimestamps() (int64, int64, int64, int64) {
 	end := simulated_time.Truncate(time.Minute)
 
 	return start.Unix(), end.Unix(), end.UnixMilli(), simulated_time.UnixMilli()
+}
+
+func createCandle(candle database.GetOHLCVRow, timeframe time.Duration) database.GetOHLCVRow {
+	t := time.Unix(candle.Time, 0)
+
+	return database.GetOHLCVRow{
+		Time:   helpers.CandleTime(t, timeframe).Unix(),
+		Open:   candle.Open,
+		High:   candle.High,
+		Low:    candle.Low,
+		Close:  candle.Close,
+		Volume: candle.Volume,
+	}
+}
+
+func updateCandle(oldCandle database.GetOHLCVRow, newCandle database.GetOHLCVRow) database.GetOHLCVRow {
+	if newCandle.High.Cmp(oldCandle.High) > 0 {
+		oldCandle.High = newCandle.High
+	}
+
+	if newCandle.Low.Cmp(oldCandle.Low) < 0 {
+		oldCandle.Low = newCandle.Low
+	}
+
+	oldCandle.Close = newCandle.Close
+	oldCandle.Volume, _ = oldCandle.Volume.Add(newCandle.Volume)
+
+	return oldCandle
+}
+
+func recalculateOHLCVOnTimeframe(ohlcv []database.GetOHLCVRow, timeframe time.Duration) []database.GetOHLCVRow {
+	result := []database.GetOHLCVRow{}
+
+	result = append(result, createCandle(ohlcv[0], timeframe))
+
+	ohlcv = ohlcv[1:]
+	for _, candle := range ohlcv {
+		t := time.Unix(candle.Time, 0)
+
+		if helpers.CandleTime(t, timeframe).Unix() == result[len(result)-1].Time {
+			result[len(result)-1] = updateCandle(result[len(result)-1], candle)
+		} else {
+			result = append(result, createCandle(candle, timeframe))
+		}
+	}
+
+	return result
 }
