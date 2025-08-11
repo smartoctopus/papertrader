@@ -140,8 +140,18 @@ class LightweightChartWC extends HTMLElement {
       }
     };
 
-    this.socket.onerror = (error) => {
-      console.log("WebSocket error:", error);
+    this.socket.onerror = (event) => {
+      console.error("WebSocket error:", {
+        url: this.socket.url,
+        readyState: this.socket.readyState,
+        time: new Date().toISOString(),
+      });
+    };
+
+    this.socket.onclose = (event) => {
+      if (event.code === 1006) {
+        console.warn("WebSocket closed abnormally (code 1006)");
+      }
     };
   }
 
