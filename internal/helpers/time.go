@@ -17,7 +17,7 @@ func StartSimulatedTime() {
 	baseSimulatedTime = time.Date(
 		startSimulatedTime.Year(), startSimulatedTime.Month(), startSimulatedTime.Day(),
 		13, 30, 0, 0, startSimulatedTime.Location())
-	baseSimulatedTime = baseSimulatedTime.Add(-24 * time.Hour * 3)
+	baseSimulatedTime = baseSimulatedTime.Add(-24 * time.Hour)
 }
 
 func GetSimulatedTime(t time.Time) time.Time {
