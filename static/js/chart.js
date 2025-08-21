@@ -1,4 +1,5 @@
 import { createChart, CandlestickSeries } from "./lightweight-charts.js";
+import { SMA } from "./indicators.js";
 
 // Define styles for the web component
 const elementStyles = `
@@ -65,7 +66,7 @@ class LightweightChartWC extends HTMLElement {
       },
     });
 
-    // Add a simple line series with example data
+    // Add candlestick series
     this.series = this.chart.addSeries(CandlestickSeries, {
       upColor: "#26a69a",
       downColor: "#ef5350",
@@ -73,6 +74,9 @@ class LightweightChartWC extends HTMLElement {
       wickUpColor: "#26a69a",
       wickDownColor: "#ef5350",
     });
+
+    // Load indicators
+    this.indicators = [new SMA(8)];
 
     // Handle resizing
     window.addEventListener("resize", () => {
@@ -106,6 +110,10 @@ class LightweightChartWC extends HTMLElement {
       this.series.update(createCandle(tick.time, tick.price));
     } else {
       this.series.update(updateCandle(lastCandle, tick.price));
+    }
+
+    for (let indicator of this.indicators) {
+      indicator.update(this.series.data());
     }
   }
 
@@ -168,6 +176,10 @@ class LightweightChartWC extends HTMLElement {
       .then((data) => {
         this.series.setData(data);
         this.chart.timeScale().fitContent();
+
+        for (let indicator of this.indicators) {
+          indicator.setup(this.chart, this.series.data());
+        }
       })
       .catch((error) => {
         console.error("There was a problem with the fetch operation:", error);
