@@ -1,5 +1,5 @@
 import { createChart, CandlestickSeries } from "./lightweight-charts.js";
-import { SMA } from "./indicators.js";
+import { EMA } from "./indicators.js";
 
 // Define styles for the web component
 const elementStyles = `
@@ -76,7 +76,7 @@ class LightweightChartWC extends HTMLElement {
     });
 
     // Load indicators
-    this.indicators = [new SMA(8)];
+    this.indicators = [new EMA(8, "#FF0000"), new EMA(21, "#2962FF")];
 
     // Handle resizing
     window.addEventListener("resize", () => {

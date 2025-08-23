@@ -1,8 +1,9 @@
 import { LineSeries } from "./lightweight-charts.js";
 
 export class SMA {
-  constructor(length) {
+  constructor(length, color) {
     this.length = length;
+    this.color = color;
   }
 
   setup(chart, candleData) {
@@ -27,7 +28,7 @@ export class SMA {
     }
 
     this.series = chart.addSeries(LineSeries, {
-      color: "#2962FF",
+      color: this.color,
       lineWidth: 1,
     });
 
